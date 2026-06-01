@@ -1,0 +1,112 @@
+{
+  "name": "LinkVault",
+  "description": "Full-stack bookmark manager: members save and tag links and publish read-only public collections. Next.js web app + API routes, PostgreSQL via Prisma, and a daily metadata backfill job.",
+  "categories": [
+    { "id": "actor", "label": "Actor", "color": "#e879b9" },
+    { "id": "client", "label": "Client surface", "color": "#38bdf8" },
+    { "id": "server", "label": "API / server", "color": "#a78bfa" },
+    { "id": "data", "label": "Data store", "color": "#fbbf24" },
+    { "id": "job", "label": "Background job", "color": "#34d399" },
+    { "id": "external", "label": "External service", "color": "#94a3b8" }
+  ],
+  "nodes": [
+    { "id": "member", "label": "Member", "category": "actor", "detail": "Signed-in user" },
+    { "id": "visitor", "label": "Visitor", "category": "actor", "detail": "Anonymous viewer" },
+    { "id": "web", "label": "Member UI", "category": "client", "path": "src/app/(app)", "detail": "Next.js App Router" },
+    { "id": "public", "label": "Public collection", "category": "client", "path": "src/app/c/[slug]/page.tsx" },
+    { "id": "signin", "label": "Sign-in page", "category": "client", "path": "src/app/signin/page.tsx" },
+    { "id": "api_links", "label": "links API", "category": "server", "path": "src/app/api/links/route.ts", "detail": "GET / POST / DELETE links" },
+    { "id": "api_collections", "label": "collections API", "category": "server", "path": "src/app/api/collections/route.ts" },
+    { "id": "api_auth", "label": "Auth.js route", "category": "server", "path": "src/app/api/auth/[...nextauth]/route.ts" },
+    { "id": "cron_route", "label": "cron endpoint", "category": "server", "path": "src/app/api/cron/fetch-metadata/route.ts", "detail": "guarded by CRON_SECRET" },
+    { "id": "db", "label": "PostgreSQL", "category": "data", "path": "prisma/schema.prisma", "detail": "via Prisma" },
+    { "id": "job_meta", "label": "Metadata job", "category": "job", "path": "src/jobs/fetch-metadata.ts", "detail": "fills title + favicon" },
+    { "id": "github", "label": "GitHub OAuth", "category": "external", "detail": "only auth provider" },
+    { "id": "vercelcron", "label": "Vercel Cron", "category": "external", "detail": "daily 06:00 UTC" }
+  ],
+  "edges": [
+    { "from": "member", "to": "web" },
+    { "from": "member", "to": "signin" },
+    { "from": "visitor", "to": "public" },
+    { "from": "web", "to": "api_links" },
+    { "from": "web", "to": "api_collections" },
+    { "from": "public", "to": "api_collections" },
+    { "from": "signin", "to": "api_auth" },
+    { "from": "api_auth", "to": "github" },
+    { "from": "api_auth", "to": "db" },
+    { "from": "api_links", "to": "db" },
+    { "from": "api_collections", "to": "db" },
+    { "from": "vercelcron", "to": "cron_route" },
+    { "from": "cron_route", "to": "job_meta" },
+    { "from": "job_meta", "to": "db" }
+  ],
+  "flows": [
+    {
+      "id": "save-link",
+      "name": "Save a link",
+      "description": "Member saves a URL; metadata is filled in later by the job.",
+      "steps": [
+        { "from": "member", "to": "web", "label": "paste URL + tags", "detail": "link form in src/app/(app)/page.tsx" },
+        { "from": "web", "to": "api_links", "label": "POST /api/links", "detail": "body { url, tags[] } validated by Zod" },
+        { "from": "api_links", "to": "db", "label": "insert link", "detail": "status = \"pending\", userId from session" }
+      ]
+    },
+    {
+      "id": "view-public",
+      "name": "View a public collection",
+      "description": "Anonymous visitor opens a shared collection by slug.",
+      "steps": [
+        { "from": "visitor", "to": "public", "label": "GET /c/[slug]", "detail": "server component" },
+        { "from": "public", "to": "api_collections", "label": "fetch collection", "detail": "GET /api/collections/[slug]" },
+        { "from": "api_collections", "to": "db", "label": "select where isPublic", "detail": "no private user fields selected" }
+      ]
+    },
+    {
+      "id": "metadata-backfill",
+      "name": "Metadata backfill",
+      "description": "Daily job fetches title + favicon for pending links.",
+      "steps": [
+        { "from": "vercelcron", "to": "cron_route", "label": "daily trigger", "detail": "GET with CRON_SECRET header" },
+        { "from": "cron_route", "to": "job_meta", "label": "run job", "detail": "src/jobs/fetch-metadata.ts" },
+        { "from": "job_meta", "to": "db", "label": "update link", "detail": "status pending → ready (or failed after 3 tries)" }
+      ]
+    },
+    {
+      "id": "signin",
+      "name": "Sign in with GitHub",
+      "description": "Member authenticates via GitHub OAuth through Auth.js.",
+      "steps": [
+        { "from": "member", "to": "signin", "label": "click Sign in" },
+        { "from": "signin", "to": "api_auth", "label": "start OAuth", "detail": "/api/auth/signin/github" },
+        { "from": "api_auth", "to": "github", "label": "redirect to GitHub" },
+        { "from": "github", "to": "api_auth", "label": "callback with code" },
+        { "from": "api_auth", "to": "db", "label": "upsert user + session" }
+      ]
+    },
+    {
+      "id": "create-collection",
+      "name": "Create a collection",
+      "description": "Member creates or updates a shareable collection.",
+      "steps": [
+        { "from": "member", "to": "web", "label": "name + pick links" },
+        { "from": "web", "to": "api_collections", "label": "POST /api/collections", "detail": "body { name, slug, isPublic }" },
+        { "from": "api_collections", "to": "db", "label": "insert / update collection" }
+      ]
+    },
+    {
+      "id": "delete-link",
+      "name": "Delete a link",
+      "description": "Member removes a saved link.",
+      "steps": [
+        { "from": "member", "to": "web", "label": "click delete" },
+        { "from": "web", "to": "api_links", "label": "DELETE /api/links/[id]" },
+        { "from": "api_links", "to": "db", "label": "delete where userId matches", "detail": "ownership filter enforced" }
+      ]
+    }
+  ],
+  "meta": {
+    "generatedAt": "2026-05-31",
+    "sourceCommit": "example — not from a real repo",
+    "notes": "Sample output for the 06-architecture-map prompt. Mirrors the LinkVault app used in examples/05-technical-guide."
+  }
+}

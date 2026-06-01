@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LinkVault — Architecture &amp; Flows</title>
+<style>
+  :root {
+    --bg: #0a0c12;
+    --panel: #11141d;
+    --panel-2: #161a26;
+    --border: #232838;
+    --text: #e7eaf3;
+    --muted: #8a93a8;
+    --edge: #2c3346;
+    --accent: #f5c451;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header { padding: 24px 28px 12px; }
+  header h1 { margin: 0 0 6px; font-size: 22px; letter-spacing: .2px; }
+  header p { margin: 0; max-width: 760px; color: var(--muted); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+  .legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+
+  .layout { display: grid; grid-template-columns: 1fr 320px; gap: 18px; padding: 12px 28px 28px; align-items: start; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+  .diagram {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    overflow: auto;
+  }
+  .columns { position: relative; display: flex; gap: 40px; min-width: 760px; z-index: 2; }
+  .column { display: flex; flex-direction: column; gap: 18px; flex: 1; }
+  .column h3 {
+    margin: 0 0 2px; font-size: 10px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .node {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--cat, var(--border));
+    border-radius: 9px;
+    padding: 9px 11px;
+    transition: opacity .15s, border-color .15s, box-shadow .15s;
+  }
+  .node .label { font-weight: 600; font-size: 13px; }
+  .node .path { color: var(--muted); font-size: 11px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+  .node .detail { color: var(--muted); font-size: 11px; }
+  .node.dim { opacity: .28; }
+  .node.active { box-shadow: 0 0 0 1px var(--accent), 0 0 18px -6px var(--accent); border-left-color: var(--accent); }
+
+  svg.wires { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: visible; }
+
+  aside { display: flex; flex-direction: column; gap: 18px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .card h2 { margin: 0; padding: 14px 16px 10px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .flow {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    background: none; border: none; border-top: 1px solid var(--border);
+    padding: 12px 16px; color: var(--text); font: inherit;
+  }
+  .flow:hover { background: var(--panel-2); }
+  .flow.selected { background: var(--panel-2); box-shadow: inset 3px 0 0 var(--accent); }
+  .flow .name { font-weight: 600; }
+  .flow .desc { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .clear { width: 100%; background: none; border: none; border-top: 1px solid var(--border); color: var(--muted); padding: 11px 16px; cursor: pointer; font: inherit; text-align: left; }
+  .clear:hover { color: var(--text); }
+
+  .step { display: flex; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--border); }
+  .step .num {
+    flex: none; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--accent); color: #1a1300; font-weight: 700; font-size: 11px;
+    display: grid; place-items: center; margin-top: 1px;
+  }
+  .step .hop { font-size: 12px; color: var(--muted); }
+  .step .hop b { color: var(--text); }
+  .step .lbl { font-weight: 600; }
+  .step .det { color: var(--muted); font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .empty { padding: 14px 16px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title"></h1>
+  <p id="desc"></p>
+  <div class="legend" id="legend"></div>
+</header>
+
+<div class="layout">
+  <div class="diagram" id="diagram">
+    <svg class="wires" id="wires"></svg>
+    <div class="columns" id="columns"></div>
+  </div>
+  <aside>
+    <div class="card">
+      <h2>Flows</h2>
+      <div id="flows"></div>
+      <button class="clear" id="clear">Clear selection</button>
+    </div>
+    <div class="card">
+      <h2>Steps</h2>
+      <div id="steps"></div>
+    </div>
+  </aside>
+</div>
+
+<script>
+const DATA = {
+  "name": "LinkVault",
+  "description": "Full-stack bookmark manager: members save and tag links and publish read-only public collections. Next.js web app + API routes, PostgreSQL via Prisma, and a daily metadata backfill job.",
+  "categories": [
+    { "id": "actor", "label": "Actor", "color": "#e879b9" },
+    { "id": "client", "label": "Client surface", "color": "#38bdf8" },
+    { "id": "server", "label": "API / server", "color": "#a78bfa" },
+    { "id": "data", "label": "Data store", "color": "#fbbf24" },
+    { "id": "job", "label": "Background job", "color": "#34d399" },
+    { "id": "external", "label": "External service", "color": "#94a3b8" }
+  ],
+  "nodes": [
+    { "id": "member", "label": "Member", "category": "actor", "detail": "Signed-in user" },
+    { "id": "visitor", "label": "Visitor", "category": "actor", "detail": "Anonymous viewer" },
+    { "id": "web", "label": "Member UI", "category": "client", "path": "src/app/(app)", "detail": "Next.js App Router" },
+    { "id": "public", "label": "Public collection", "category": "client", "path": "src/app/c/[slug]/page.tsx" },
+    { "id": "signin", "label": "Sign-in page", "category": "client", "path": "src/app/signin/page.tsx" },
+    { "id": "api_links", "label": "links API", "category": "server", "path": "src/app/api/links/route.ts", "detail": "GET / POST / DELETE links" },
+    { "id": "api_collections", "label": "collections API", "category": "server", "path": "src/app/api/collections/route.ts" },
+    { "id": "api_auth", "label": "Auth.js route", "category": "server", "path": "src/app/api/auth/[...nextauth]/route.ts" },
+    { "id": "cron_route", "label": "cron endpoint", "category": "server", "path": "src/app/api/cron/fetch-metadata/route.ts", "detail": "guarded by CRON_SECRET" },
+    { "id": "db", "label": "PostgreSQL", "category": "data", "path": "prisma/schema.prisma", "detail": "via Prisma" },
+    { "id": "job_meta", "label": "Metadata job", "category": "job", "path": "src/jobs/fetch-metadata.ts", "detail": "fills title + favicon" },
+    { "id": "github", "label": "GitHub OAuth", "category": "external", "detail": "only auth provider" },
+    { "id": "vercelcron", "label": "Vercel Cron", "category": "external", "detail": "daily 06:00 UTC" }
+  ],
+  "edges": [
+    { "from": "member", "to": "web" },
+    { "from": "member", "to": "signin" },
+    { "from": "visitor", "to": "public" },
+    { "from": "web", "to": "api_links" },
+    { "from": "web", "to": "api_collections" },
+    { "from": "public", "to": "api_collections" },
+    { "from": "signin", "to": "api_auth" },
+    { "from": "api_auth", "to": "github" },
+    { "from": "api_auth", "to": "db" },
+    { "from": "api_links", "to": "db" },
+    { "from": "api_collections", "to": "db" },
+    { "from": "vercelcron", "to": "cron_route" },
+    { "from": "cron_route", "to": "job_meta" },
+    { "from": "job_meta", "to": "db" }
+  ],
+  "flows": [
+    {
+      "id": "save-link",
+      "name": "Save a link",
+      "description": "Member saves a URL; metadata is filled in later by the job.",
+      "steps": [
+        { "from": "member", "to": "web", "label": "paste URL + tags", "detail": "link form in src/app/(app)/page.tsx" },
+        { "from": "web", "to": "api_links", "label": "POST /api/links", "detail": "body { url, tags[] } validated by Zod" },
+        { "from": "api_links", "to": "db", "label": "insert link", "detail": "status = \"pending\", userId from session" }
+      ]
+    },
+    {
+      "id": "view-public",
+      "name": "View a public collection",
+      "description": "Anonymous visitor opens a shared collection by slug.",
+      "steps": [
+        { "from": "visitor", "to": "public", "label": "GET /c/[slug]", "detail": "server component" },
+        { "from": "public", "to": "api_collections", "label": "fetch collection", "detail": "GET /api/collections/[slug]" },
+        { "from": "api_collections", "to": "db", "label": "select where isPublic", "detail": "no private user fields selected" }
+      ]
+    },
+    {
+      "id": "metadata-backfill",
+      "name": "Metadata backfill",
+      "description": "Daily job fetches title + favicon for pending links.",
+      "steps": [
+        { "from": "vercelcron", "to": "cron_route", "label": "daily trigger", "detail": "GET with CRON_SECRET header" },
+        { "from": "cron_route", "to": "job_meta", "label": "run job", "detail": "src/jobs/fetch-metadata.ts" },
+        { "from": "job_meta", "to": "db", "label": "update link", "detail": "status pending → ready (or failed after 3 tries)" }
+      ]
+    },
+    {
+      "id": "signin",
+      "name": "Sign in with GitHub",
+      "description": "Member authenticates via GitHub OAuth through Auth.js.",
+      "steps": [
+        { "from": "member", "to": "signin", "label": "click Sign in" },
+        { "from": "signin", "to": "api_auth", "label": "start OAuth", "detail": "/api/auth/signin/github" },
+        { "from": "api_auth", "to": "github", "label": "redirect to GitHub" },
+        { "from": "github", "to": "api_auth", "label": "callback with code" },
+        { "from": "api_auth", "to": "db", "label": "upsert user + session" }
+      ]
+    },
+    {
+      "id": "create-collection",
+      "name": "Create a collection",
+      "description": "Member creates or updates a shareable collection.",
+      "steps": [
+        { "from": "member", "to": "web", "label": "name + pick links" },
+        { "from": "web", "to": "api_collections", "label": "POST /api/collections", "detail": "body { name, slug, isPublic }" },
+        { "from": "api_collections", "to": "db", "label": "insert / update collection" }
+      ]
+    },
+    {
+      "id": "delete-link",
+      "name": "Delete a link",
+      "description": "Member removes a saved link.",
+      "steps": [
+        { "from": "member", "to": "web", "label": "click delete" },
+        { "from": "web", "to": "api_links", "label": "DELETE /api/links/[id]" },
+        { "from": "api_links", "to": "db", "label": "delete where userId matches", "detail": "ownership filter enforced" }
+      ]
+    }
+  ],
+  "meta": {
+    "generatedAt": "2026-05-31",
+    "sourceCommit": "example — not from a real repo",
+    "notes": "Sample output for the 06-architecture-map prompt. Mirrors the LinkVault app used in examples/05-technical-guide."
+  }
+};
+
+const SVGNS = "http://www.w3.org/2000/svg";
+const byId = {};
+DATA.nodes.forEach(n => (byId[n.id] = n));
+const catColor = {};
+DATA.categories.forEach(c => (catColor[c.id] = c.color));
+const nodeEls = {};
+let selected = null;
+
+// --- render header ---
+document.getElementById("title").textContent = DATA.name + " — Architecture & Flows";
+document.getElementById("desc").textContent = DATA.description;
+const legend = document.getElementById("legend");
+DATA.categories.forEach(c => {
+  const s = document.createElement("span");
+  s.innerHTML = `<i style="background:${c.color}"></i>${c.label}`;
+  legend.appendChild(s);
+});
+
+// --- render columns ---
+const columns = document.getElementById("columns");
+DATA.categories.forEach(cat => {
+  const nodes = DATA.nodes.filter(n => n.category === cat.id);
+  if (!nodes.length) return;
+  const col = document.createElement("div");
+  col.className = "column";
+  const h = document.createElement("h3");
+  h.textContent = cat.label;
+  col.appendChild(h);
+  nodes.forEach(n => {
+    const el = document.createElement("div");
+    el.className = "node";
+    el.style.setProperty("--cat", catColor[n.category]);
+    el.innerHTML =
+      `<div class="label">${n.label}</div>` +
+      (n.path ? `<div class="path">${n.path}</div>` : "") +
+      (n.detail ? `<div class="detail">${n.detail}</div>` : "");
+    col.appendChild(el);
+    nodeEls[n.id] = el;
+  });
+  columns.appendChild(col);
+});
+
+// --- wire geometry ---
+const svg = document.getElementById("wires");
+const diagram = document.getElementById("diagram");
+
+function anchor(fromEl, toEl) {
+  const base = diagram.getBoundingClientRect();
+  const a = fromEl.getBoundingClientRect();
+  const b = toEl.getBoundingClientRect();
+  const ax = a.left + a.width / 2 - base.left + diagram.scrollLeft;
+  const ay = a.top + a.height / 2 - base.top + diagram.scrollTop;
+  const bx = b.left + b.width / 2 - base.left + diagram.scrollLeft;
+  const by = b.top + b.height / 2 - base.top + diagram.scrollTop;
+  const border = (cx, cy, w, h, tx, ty) => {
+    const dx = tx - cx, dy = ty - cy;
+    if (dx === 0 && dy === 0) return [cx, cy];
+    const t = Math.min(
+      Math.abs(dx) < 1e-6 ? Infinity : (w / 2) / Math.abs(dx),
+      Math.abs(dy) < 1e-6 ? Infinity : (h / 2) / Math.abs(dy)
+    );
+    return [cx + dx * t, cy + dy * t];
+  };
+  const [x1, y1] = border(ax, ay, a.width, a.height, bx, by);
+  const [x2, y2] = border(bx, by, b.width, b.height, ax, ay);
+  return { x1, y1, x2, y2 };
+}
+
+function line(x1, y1, x2, y2, cls) {
+  const l = document.createElementNS(SVGNS, "line");
+  l.setAttribute("x1", x1); l.setAttribute("y1", y1);
+  l.setAttribute("x2", x2); l.setAttribute("y2", y2);
+  l.setAttribute("class", cls);
+  return l;
+}
+
+function badge(x, y, n) {
+  const g = document.createElementNS(SVGNS, "g");
+  const c = document.createElementNS(SVGNS, "circle");
+  c.setAttribute("cx", x); c.setAttribute("cy", y); c.setAttribute("r", 9);
+  c.setAttribute("fill", "var(--accent)");
+  const t = document.createElementNS(SVGNS, "text");
+  t.setAttribute("x", x); t.setAttribute("y", y + 3.5);
+  t.setAttribute("text-anchor", "middle");
+  t.setAttribute("font-size", "11"); t.setAttribute("font-weight", "700");
+  t.setAttribute("fill", "#1a1300");
+  t.textContent = n;
+  g.appendChild(c); g.appendChild(t);
+  return g;
+}
+
+function draw() {
+  svg.innerHTML = "";
+  // resting edges
+  DATA.edges.forEach(e => {
+    const f = nodeEls[e.from], t = nodeEls[e.to];
+    if (!f || !t) return;
+    const { x1, y1, x2, y2 } = anchor(f, t);
+    const l = line(x1, y1, x2, y2, "rest");
+    l.setAttribute("stroke", "var(--edge)");
+    l.setAttribute("stroke-width", "1.5");
+    svg.appendChild(l);
+  });
+  if (!selected) return;
+  const flow = DATA.flows.find(fl => fl.id === selected);
+  flow.steps.forEach((s, i) => {
+    const f = nodeEls[s.from], t = nodeEls[s.to];
+    if (!f || !t) return;
+    const { x1, y1, x2, y2 } = anchor(f, t);
+    const l = line(x1, y1, x2, y2, "hot");
+    l.setAttribute("stroke", "var(--accent)");
+    l.setAttribute("stroke-width", "2.5");
+    svg.appendChild(l);
+    svg.appendChild(badge((x1 + x2) / 2, (y1 + y2) / 2, i + 1));
+  });
+}
+
+// --- flows + steps panels ---
+const flowsEl = document.getElementById("flows");
+const stepsEl = document.getElementById("steps");
+
+function renderSteps() {
+  stepsEl.innerHTML = "";
+  if (!selected) {
+    stepsEl.innerHTML = '<div class="empty">Pick a flow to trace its path.</div>';
+    return;
+  }
+  const flow = DATA.flows.find(fl => fl.id === selected);
+  flow.steps.forEach((s, i) => {
+    const row = document.createElement("div");
+    row.className = "step";
+    row.innerHTML =
+      `<div class="num">${i + 1}</div>` +
+      `<div><div class="hop"><b>${byId[s.from].label}</b> → <b>${byId[s.to].label}</b></div>` +
+      `<div class="lbl">${s.label}</div>` +
+      (s.detail ? `<div class="det">${s.detail}</div>` : "") + `</div>`;
+    stepsEl.appendChild(row);
+  });
+}
+
+function select(id) {
+  selected = id;
+  // node highlight
+  const involved = new Set();
+  if (id) {
+    DATA.flows.find(fl => fl.id === id).steps.forEach(s => { involved.add(s.from); involved.add(s.to); });
+  }
+  DATA.nodes.forEach(n => {
+    const el = nodeEls[n.id];
+    el.classList.toggle("active", id ? involved.has(n.id) : false);
+    el.classList.toggle("dim", id ? !involved.has(n.id) : false);
+  });
+  [...flowsEl.children].forEach(b => b.classList.toggle("selected", b.dataset.id === id));
+  renderSteps();
+  draw();
+}
+
+DATA.flows.forEach(fl => {
+  const b = document.createElement("button");
+  b.className = "flow";
+  b.dataset.id = fl.id;
+  b.innerHTML = `<div class="name">${fl.name}</div><div class="desc">${fl.description}</div>`;
+  b.addEventListener("click", () => select(fl.id));
+  flowsEl.appendChild(b);
+});
+document.getElementById("clear").addEventListener("click", () => select(null));
+
+window.addEventListener("resize", draw);
+requestAnimationFrame(() => select(DATA.flows[0].id)); // default selection
+</script>
+</body>
+</html>

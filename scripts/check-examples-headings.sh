@@ -241,6 +241,26 @@ check_literal_headings \
   "16. File-by-File Reference" \
   "17. Future Work"
 
+check_content_pattern \
+  "examples/06-architecture-map/architecture.json" \
+  "a nodes array" \
+  '"nodes"'
+
+check_content_pattern \
+  "examples/06-architecture-map/architecture.json" \
+  "a flows array" \
+  '"flows"'
+
+check_content_pattern \
+  "examples/06-architecture-map/ARCHITECTURE.html" \
+  "an embedded DATA block" \
+  'const DATA'
+
+check_content_pattern \
+  "examples/06-architecture-map/ARCHITECTURE.html" \
+  "a flows panel" \
+  'id="flows"'
+
 if ((failures > 0)); then
   echo "Example heading check failed."
   exit 1
