@@ -71,7 +71,7 @@ A thorough, self-contained technical reference. Number the sections. Include eve
 - **Repository Structure** — an annotated folder tree with a one-line comment on each significant folder/file's role
 - **Tech Stack** — a table with columns: Layer, Technology, Why (the specific reason it was chosen for this project)
 - **Data Architecture** — for each core table/collection: a field table (name, type, purpose) plus relationships; document any status lifecycle as a small state diagram or arrow flow
-- **Core Subsystems** — one subsection per subsystem that applies (auth, payments, background jobs, integrations, domain logic). For each: what it is, how it works, the files it lives in, and the key behaviors. Use code snippets only where a short one clarifies a real pattern in the codebase
+- **Core Subsystems** — one subsection per subsystem that applies (auth, payments, background jobs, integrations, domain logic). For each: what it is, how it works, the files it lives in, and the key behaviors. Use code snippets only where a short one clarifies a real pattern in the codebase. Don't restate the endpoint, page, or env-var tables that live in their own sections — cross-reference them instead
 - **API Reference** — tables of endpoints grouped by access level (public / authenticated / admin / webhooks): Method, Path, Purpose. Omit if there is no API
 - **Frontend** — tables of pages/screens/routes with their component file and notable behavior; note navigation and state-management approach. Omit if there is no frontend
 - **Testing** — what is tested at each level, where tests live, roughly how many, and an explicit "What is not tested" list
@@ -80,7 +80,7 @@ A thorough, self-contained technical reference. Number the sections. Include eve
 - **Deployment** — platform, build command, branch/preview/production flow, crons, and any deploy-time gotchas. Omit if not deployed anywhere
 - **Security Model** — auth/authorization boundaries, sensitive-data handling, input validation, and any headers/token/secret practices. Omit if there is genuinely nothing to say
 - **Key Patterns** — the recurring conventions and non-obvious decisions someone must understand to work in this codebase, each with the reasoning behind it
-- **Glossary** — alphabetical-ish list of project-specific terms, ambiguous field names, and internal jargon, each defined precisely
+- **Glossary** — project-specific terms, ambiguous field names, and internal jargon, each defined precisely; order by importance (most-central terms first)
 - **File-by-File Reference** — the most important files grouped by concern (infrastructure, business logic, key routes, schema, etc.), each with a one-line description
 - **Future Work** — a numbered list of known gaps, deferred features, and open questions, each with enough context to act on later
 
