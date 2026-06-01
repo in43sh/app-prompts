@@ -21,6 +21,7 @@ A collection of structured AI prompts for kicking off new software projects. Use
 | [docs/02-claude-md.md](docs/02-claude-md.md) | Generate a `CLAUDE.md` quick-reference for an existing codebase |
 | [docs/03-roadmap.md](docs/03-roadmap.md) | Plan phased rollout and track build progress — produces `ROADMAP.md`, `BUILD-STATUS.md` |
 | [docs/04-design.md](docs/04-design.md) | Generate a reusable design system prompt for AI design tools — produces `DESIGN_PROMPT.md` |
+| [docs/05-technical-guide.md](docs/05-technical-guide.md) | Document an existing codebase in depth — produces `TECHNICAL_GUIDE.md` |
 
 ## Examples
 
@@ -32,6 +33,7 @@ Finished sample outputs live in [`examples/`](examples):
 - [`examples/02-claude-md/`](examples/02-claude-md) — sample `CLAUDE.md`
 - [`examples/03-roadmap/`](examples/03-roadmap) — sample `ROADMAP.md`, `BUILD-STATUS.md`
 - [`examples/04-design/`](examples/04-design) — sample `DESIGN_PROMPT.md`
+- [`examples/05-technical-guide/`](examples/05-technical-guide) — sample `TECHNICAL_GUIDE.md`
 
 Use them to calibrate prompt changes and check whether generated outputs are concrete enough to implement.
 
@@ -67,3 +69,7 @@ Use them to calibrate prompt changes and check whether generated outputs are con
 **Design system prompt** (`04-design.md`) produces:
 
 - **DESIGN_PROMPT.md** — master design prompt plus page-specific and component variant prompts for AI design tools (v0.dev, Bolt, Lovable, Stitch, Galileo)
+
+**Technical guide** (`05-technical-guide.md`) produces:
+
+- **TECHNICAL_GUIDE.md** — in-depth codebase reference: architecture diagram, data model, subsystems, API/frontend maps, testing, local dev, deployment, security, patterns, glossary, and future work

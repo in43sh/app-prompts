@@ -216,6 +216,31 @@ check_literal_headings \
   "Page Specs" \
   "Component Variant Prompts"
 
+check_heading_pattern \
+  "examples/05-technical-guide/TECHNICAL_GUIDE.md" \
+  "an architecture Mermaid diagram" \
+  '```mermaid'
+
+check_literal_headings \
+  "examples/05-technical-guide/TECHNICAL_GUIDE.md" \
+  "1. What This Is" \
+  "2. Architecture" \
+  "3. Repository Structure" \
+  "4. Tech Stack" \
+  "5. Data Architecture" \
+  "6. Core Subsystems" \
+  "7. API Reference" \
+  "8. Frontend" \
+  "9. Testing" \
+  "10. Local Development" \
+  "11. Environment Variables" \
+  "12. Deployment" \
+  "13. Security Model" \
+  "14. Key Patterns" \
+  "15. Glossary" \
+  "16. File-by-File Reference" \
+  "17. Future Work"
+
 if ((failures > 0)); then
   echo "Example heading check failed."
   exit 1
