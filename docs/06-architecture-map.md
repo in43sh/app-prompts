@@ -9,6 +9,8 @@ The HTML is generated *from* the JSON — they describe the same graph, and the 
 
 **If you have access to the codebase, read it first.** Before asking me anything, scan the obvious sources of truth — `package.json` (scripts, dependencies), the schema/migrations, the routes or API folder, `.env.example`, config files, background jobs, and any infra config — and draft the node/flow map yourself. Then use the stages below to *confirm what you found and fill the gaps*.
 
+**Curate, don't enumerate.** The map is a mental model, not a file listing. Aim for the ~10–25 components that explain how the system works; collapse a folder of similar files into one node (e.g. one "API routes" node, not thirty). Leave out leaf utilities, types, and config that don't shape a flow. If the diagram wouldn't fit on one screen, it has too many nodes.
+
 Accuracy rules:
 
 - Every node must map to a real thing in the repo — a file, folder, table, or named external service. Put the real path in the node where one exists. Never invent a component you haven't seen.
@@ -21,7 +23,7 @@ Accuracy rules:
 
 ## Stage 2 — Flows
 
-- What are the handful of representative end-to-end flows worth highlighting? (e.g. "user saves a record", "webhook arrives", "scheduled job runs", "new user signs up")
+- What are the representative end-to-end flows worth highlighting? Pick 4–8 — the ones that explain the system, not every endpoint. (e.g. "user saves a record", "webhook arrives", "scheduled job runs", "new user signs up")
 - For each flow, walk me through the ordered steps: which node calls which, what triggers it, and what data is passed at each hop.
 
 ## Stage 3 — Confirm
@@ -81,7 +83,7 @@ A structured map of the system. Use exactly this shape:
 
 Rules:
 
-- `edges` is the static architecture — every meaningful connection, shown faintly at rest.
+- `edges` is the static architecture, shown faintly at rest. It must include every pair that appears in any flow step, plus the main structural links — so the resting graph already shows the real skeleton before any flow is picked.
 - `flows[].steps` are the highlighted paths. Every `from`/`to` must reference a real node `id`.
 - Keep node ids stable and slug-like so the map diffs cleanly when regenerated.
 
@@ -92,7 +94,9 @@ A single self-contained HTML file. Requirements:
 - **No build step and no network.** Inline all CSS and JS. Do not load anything from a CDN — the file must render by double-clicking it (`file://`).
 - **Embed the data.** Include the `architecture.json` contents inline as `const DATA = { ... }` so the page is standalone. (The separate `.json` file is the agent-facing copy.)
 - **Layout.** Render nodes in columns grouped by category, in the category order given. Each node is a labeled box; show its `path`/`detail` when present. Include a legend mapping each category to its color.
-- **Flows panel.** A list of flows in a side rail (`id="flows"`). Clicking a flow highlights its nodes and draws its `steps` as numbered connectors between the node boxes (compute connector positions from element geometry so they survive resize).
+- **Flows panel.** A list of flows in a side rail (`id="flows"`). Clicking a flow highlights its nodes and draws its `steps` as numbered connectors between the node boxes.
+- **Connectors.** Draw them as a single SVG overlay sitting above the columns. Compute each line's endpoints from the node boxes' on-screen geometry — anchor on each box's border facing the other box — and redraw on window `resize` so they keep tracking the boxes. Put the step number on a small badge at each line's midpoint.
+- **Escape text.** Node and flow strings can contain characters like `[`, `]`, or `<` (e.g. `src/app/[id]/route.ts`). Escape them before inserting into the DOM so they can't break layout.
 - **Steps panel.** When a flow is selected, show its ordered steps as a numbered list: `from → to`, the step `label`, and `detail`.
 - **Clear selection.** A control that resets to the at-rest view (faint static edges, no flow highlighted).
 - **Theme.** Dark, high-contrast, readable. Make the selected path obviously brighter than the resting edges.
@@ -103,6 +107,7 @@ Format guidelines:
 - The two files must agree exactly — same nodes, same ids, same flows.
 - Use real, verifiable names everywhere: file paths, table names, route paths, service names.
 - Treat both files as generated artifacts: regenerating from the current code refreshes them. Note in `meta.notes` anything you assumed rather than verified.
+- After generating, open `ARCHITECTURE.html` in a browser and confirm it renders, the default flow highlights, and the connectors track the node boxes. Fix it before handing it over.
 
 ---
 
