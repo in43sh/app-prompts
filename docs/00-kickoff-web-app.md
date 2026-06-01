@@ -43,9 +43,10 @@ Output quality bar:
 - Hosting preferences? (self-hosted, Vercel, AWS, etc.)
 - What's the design system? (colors, fonts — or should we define one?)
 
-## Stage 5 — Project Structure
+## Stage 5 — Project Structure & Testing
 
 - Monorepo or separate repos?
+- What's the testing strategy? (unit, component, e2e)
 
 After I answer, produce the following three documents:
 

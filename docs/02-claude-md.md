@@ -2,7 +2,9 @@
 
 I have an existing codebase and want to create a `CLAUDE.md` file — a quick-reference document that helps an AI coding assistant (like Claude Code) orient itself fast without reading every file.
 
-Ask me questions in stages to learn enough about the project to write a great CLAUDE.md.
+**If you have access to the codebase, read it first.** Scan the obvious sources of truth — `package.json` (scripts, dependencies), config files, the folder structure, `.env.example`, and CI config — and draft the factual sections yourself. Then ask me in stages only to confirm what you found and fill the gaps the code can't reveal: conventions, gotchas, and what an AI should never do here. Wait for my answers before moving on.
+
+Do not invent. Verify every command, path, and env var against the actual repo; if something is unverified, mark it an assumption rather than stating it as fact.
 
 Output quality bar:
 
