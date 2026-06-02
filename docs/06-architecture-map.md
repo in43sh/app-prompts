@@ -14,7 +14,7 @@ The HTML is generated *from* the JSON — they describe the same graph, and the 
 Accuracy rules:
 
 - Every node must map to a real thing in the repo — a file, folder, table, or named external service. Put the real path in the node where one exists. Never invent a component you haven't seen.
-- Flows must trace real call paths. If you are unsure whether a step happens, ask me or mark it in the node `detail` as an assumption — don't draw an edge you can't justify.
+- Flows must trace real call paths. If you are unsure whether a step happens, ask me or record it — a doubtful hop goes in that step's `detail`, a broader assumption goes in `meta.notes`. Don't draw an edge you can't justify.
 
 Work the stages as a draft-then-confirm loop: if you have the codebase, present what you already found at each stage and ask me to correct it, rather than asking from a blank slate.
 
@@ -102,9 +102,9 @@ A single self-contained HTML file. Requirements:
 
 - **No build step and no network.** Inline all CSS and JS. Do not load anything from a CDN — the file must render by double-clicking it (`file://`).
 - **Embed the data.** Include the `architecture.json` contents inline as `const DATA = { ... }` so the page is standalone. (The separate `.json` file is the agent-facing copy.)
-- **Layout.** Render nodes in columns grouped by category, in the category order given. Each node is a labeled box; show its `path`/`detail` when present. Include a legend mapping each category to its color.
-- **Flows panel.** A list of flows in a side rail (`id="flows"`). Clicking a flow highlights its nodes and draws its `steps` as numbered connectors between the node boxes.
-- **Connectors.** Draw them as a single SVG overlay sitting above the columns. Compute each line's endpoints from the node boxes' on-screen geometry — anchor on each box's border facing the other box — and redraw on both window `resize` and `scroll` (or anchor the SVG to the scrolling container) so they keep tracking the boxes. Put the step number on a small badge at each line's midpoint.
+- **Layout.** Render nodes in columns grouped by category, in the category order given. Head each column with its category label (don't rely on color alone to convey role). Each node is a labeled box; show its `path`/`detail` when present. Include a legend mapping each category to its color.
+- **Flows panel.** A list of flows in a side rail (`id="flows"`). Clicking a flow highlights its nodes and draws its `steps` as numbered connectors between the node boxes. Dim the nodes and edges not in the selected flow so the path stands out.
+- **Connectors.** Draw them as a single SVG overlay sitting above the columns. Compute each line's endpoints from the node boxes' on-screen geometry — anchor on each box's border facing the other box — and redraw on both window `resize` and `scroll` (or anchor the SVG to the scrolling container) so they keep tracking the boxes. Give each connector an arrowhead at the `to` end so direction is visible (a response step points back), and put the step number on a small badge at its midpoint.
 - **Parallel steps.** When a flow has more than one step between the same pair of nodes (e.g. request then response), offset or curve them so the lines and their badges don't overlap — each step must stay individually readable.
 - **Escape text.** Node and flow strings can contain characters like `[`, `]`, or `<` (e.g. `src/app/[id]/route.ts`). Escape them before inserting into the DOM so they can't break layout.
 - **Steps panel.** When a flow is selected, show its ordered steps as a numbered list: `from → to`, the step `label`, and `detail`.
