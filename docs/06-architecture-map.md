@@ -114,10 +114,10 @@ A single self-contained HTML file. Requirements:
 
 Format guidelines:
 
-- The two files must agree exactly — same nodes, same ids, same flows.
+- The two files must agree exactly — same nodes, same ids, same flows. Generate `architecture.json` first, then embed it verbatim as `DATA` in the HTML; don't hand-edit either copy afterward, or they drift.
 - Use real, verifiable names everywhere: file paths, table names, route paths, service names.
 - Treat both files as generated artifacts: regenerating from the current code refreshes them. Note in `meta.notes` anything you assumed rather than verified.
-- After generating, verify before handing over. If you can drive a browser (e.g. a headless one), open `ARCHITECTURE.html` and confirm it renders, the default flow highlights, and the connectors track the boxes on resize/scroll. If you can't, do a static check: the HTML is well-formed, the inline `DATA` parses as JSON, and every `from`/`to` id in `edges` and `flows` resolves to a real node. Fix what's broken before handing it over.
+- After generating, verify before handing over. If you can drive a browser (e.g. a headless one), open `ARCHITECTURE.html` and confirm it renders, the default flow highlights, and the connectors track the boxes on resize/scroll. If you can't, do a static check: the HTML is well-formed, the inline `DATA` parses as JSON, every `from`/`to` id in `edges` and `flows` resolves to a real node, and every flow-step pair is present in `edges` (the rule above). Fix what's broken before handing it over.
 
 ---
 
