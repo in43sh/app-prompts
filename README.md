@@ -1,6 +1,6 @@
 # App Starter Prompts
 
-A collection of structured AI prompts for kicking off new software projects. Use these as starting points when working with an AI coding assistant to produce a complete, implementation-ready spec.
+A collection of structured AI prompts for the software project lifecycle — kicking off new projects, planning features, and documenting existing codebases. Use these as starting points when working with an AI coding assistant to produce a complete, implementation-ready spec.
 
 ## How to use
 
@@ -13,16 +13,55 @@ A collection of structured AI prompts for kicking off new software projects. Use
 
 ## Prompts
 
+Each prompt's output files are detailed under [Output documents](#output-documents) below.
+
 | File | Purpose |
 | --- | --- |
-| [docs/00-kickoff-web-app.md](docs/00-kickoff-web-app.md) | Web / frontend project kickoff — produces `MVP_DOCUMENT.md`, `DECISIONS.md`, `OPEN_QUESTIONS.md` |
-| [docs/00-kickoff-api.md](docs/00-kickoff-api.md) | API / backend project kickoff — produces `API_DOCUMENT.md`, `DECISIONS.md`, `OPEN_QUESTIONS.md` |
-| [docs/01-feature-spec.md](docs/01-feature-spec.md) | Plan a new feature in an existing project — produces `FEATURE_SPEC.md`, `IMPLEMENTATION_PLAN.md` |
+| [docs/00-kickoff-web-app.md](docs/00-kickoff-web-app.md) | Web / frontend project kickoff |
+| [docs/00-kickoff-api.md](docs/00-kickoff-api.md) | API / backend project kickoff |
+| [docs/01-feature-spec.md](docs/01-feature-spec.md) | Plan a new feature in an existing project |
 | [docs/02-claude-md.md](docs/02-claude-md.md) | Generate a `CLAUDE.md` quick-reference for an existing codebase |
-| [docs/03-roadmap.md](docs/03-roadmap.md) | Plan phased rollout and track build progress — produces `ROADMAP.md`, `BUILD-STATUS.md` |
-| [docs/04-design.md](docs/04-design.md) | Generate a reusable design system prompt for AI design tools — produces `DESIGN_PROMPT.md` |
-| [docs/05-technical-guide.md](docs/05-technical-guide.md) | Document an existing codebase in depth — produces `TECHNICAL_GUIDE.md` |
-| [docs/06-architecture-map.md](docs/06-architecture-map.md) | Map an existing codebase to an interactive diagram — produces `ARCHITECTURE.html`, `architecture.json` |
+| [docs/03-roadmap.md](docs/03-roadmap.md) | Plan phased rollout and track build progress |
+| [docs/04-design.md](docs/04-design.md) | Generate a reusable design system prompt for AI design tools |
+| [docs/05-technical-guide.md](docs/05-technical-guide.md) | Document an existing codebase in depth |
+| [docs/06-architecture-map.md](docs/06-architecture-map.md) | Map an existing codebase to an interactive diagram |
+
+## How the prompts chain
+
+The prompts aren't standalone — outputs from one become inputs to the next. There are two entry points depending on whether you're starting fresh or documenting code that already exists.
+
+```mermaid
+flowchart TD
+    subgraph new["Starting a new project"]
+        K["00 · kickoff (web-app / api)"]
+        D["04 · design"]
+        R["03 · roadmap"]
+        K -->|"MVP doc (web only)"| D
+        K -->|"MVP / API doc"| R
+        D -->|"DESIGN_PROMPT"| R
+    end
+
+    subgraph existing["Documenting existing code"]
+        T["05 · technical-guide"]
+        A["06 · architecture-map"]
+    end
+
+    R -->|"BUILD-STATUS"| B(("build"))
+    B --> C["02 · claude-md"]
+    T --> C
+    A --> C
+
+    C -->|"CLAUDE.md"| F["01 · feature-spec"]
+    F -->|"IMPLEMENTATION_PLAN"| B
+```
+
+**Typical flows:**
+
+- **New web/API project:** `00-kickoff-*` → feed the MVP/API doc into `04-design` (web) and `03-roadmap` → build against `BUILD-STATUS.md` → generate `02-claude-md` once code exists.
+- **Existing codebase:** `05-technical-guide` and/or `06-architecture-map` to map it → `02-claude-md` for an AI quick-reference.
+- **Ongoing work (either track):** `01-feature-spec` per feature → build → repeat.
+
+`02-claude-md` is the hinge: run it once real code exists so every later session starts with accurate context.
 
 ## Examples
 
