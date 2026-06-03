@@ -10,5 +10,7 @@ Keep these examples structurally aligned with the current prompt docs. If a prom
 - `02-claude-md/` contains a fictional `CLAUDE.md` for a SaaS monorepo.
 - `03-roadmap/` contains a fictional phased roadmap and build tracker for the BlockParty web app.
 - `04-design/` contains a fictional `DESIGN_PROMPT.md` for the BlockParty web app.
+- `05-technical-guide/` contains a fictional `TECHNICAL_GUIDE.md` for an existing codebase.
+- `06-architecture-map/` contains a fictional `ARCHITECTURE.html` and `architecture.json` for an existing codebase.
 
 The examples are intentionally concise, but they should still feel implementation-ready rather than aspirational.
