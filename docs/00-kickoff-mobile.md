@@ -34,6 +34,7 @@ Output quality bar:
 - What is explicitly out of scope for v1?
 - What platforms must ship? (iOS, Android, or both) and what minimum OS versions?
 - What must work offline, and what can require a connection?
+- Any accessibility requirements? (screen readers, dynamic type, minimum contrast and touch-target sizes)
 - Any compliance, security, or privacy requirements? (GDPR, HIPAA, COPPA, App Store / Play data-safety disclosures)
 - Which device capabilities does the app need? (camera, location, contacts, biometrics, push, microphone, sensors, Bluetooth)
 
@@ -63,14 +64,14 @@ After I answer, produce the following three documents:
 A complete, self-contained implementation spec. Include every section below:
 
 - **Project Overview** — one-paragraph brief and tech stack table (include target platforms and minimum OS versions)
-- **Design System** — colors (name, hex, usage), typography (font family, weights), effects (shadows, borders), spacing scale, and platform conventions (iOS Human Interface Guidelines vs Material, safe areas, dark mode support)
+- **Design System** — colors (name, hex, usage), typography (font family, weights), effects (shadows, borders), spacing scale, platform conventions (iOS Human Interface Guidelines vs Material, safe areas, dark mode support), and accessibility rules (screen-reader labels, dynamic-type scaling, minimum contrast and touch-target sizes)
 - **Screens & Navigation** — every screen with all UI elements, component variants, and behavior described precisely enough to build from, plus a navigation map (tab/stack/drawer structure, screen transitions, and deep-link routes)
 - **Device Permissions & Capabilities** — for each capability (camera, location, contacts, biometrics, notifications, etc.): when it is requested, the user-facing rationale string, and how granted, denied, and "denied permanently" states are handled. Omit only if the app requests no device permissions.
 - **Offline & Data Sync** — local storage choice, what is cached, per-screen offline behavior, sync and conflict-resolution strategy, and optimistic-update rules. Omit only if the app requires a connection for everything.
 - **Backend Dependencies** — base URLs per environment, auth/token handling and refresh flow, every endpoint the app consumes (method, path, purpose, response shape), the error contract, and retry/timeout behavior. If no backend exists yet, note that it must be built (see the API / Backend Kickoff prompt). Omit only if the app is fully offline with no backend.
 - **Permissions & Access Control** — app roles, gated screens/actions, and auth states (logged out, logged in, token expired). This is about app authorization, distinct from device permissions above. Omit only if the app has no accounts or privileged actions.
 - **User Flows** — numbered step-by-step flows for each primary use case
-- **Empty States** — what to show when there is no data, for each relevant screen
+- **Empty States** — what to show for each relevant screen across its empty (no data), loading (skeleton/spinner), and loaded states
 - **Error Handling** — error response format, user-facing error messages, offline/network-failure behavior, retry strategy, and logging/crash-reporting approach
 - **Push Notifications** — provider, payload shapes, deep-link-on-tap behavior, permission-prompt timing, and foreground vs. background handling. Omit if the app sends no push notifications.
 - **Security** — secret/key storage (Keychain/Keystore), token storage, certificate pinning, input validation, and handling of sensitive data on device

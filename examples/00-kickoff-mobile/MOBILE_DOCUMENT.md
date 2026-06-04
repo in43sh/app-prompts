@@ -24,7 +24,7 @@ TrailMate is a hiking companion app that lets users browse curated trails, downl
 | `slate-300` | `#C9CDD2` | borders, dividers |
 | `clay-600` | `#C2562F` | destructive actions, GPS-lost banner |
 
-Typography uses `Inter` for body at weights 400/600 and `Sora` for headings at 600/700. Cards use 12px radius and `0 6px 16px rgba(22, 48, 31, 0.10)`. The app follows platform conventions (iOS HIG vs Material) for navigation gestures and respects safe-area insets. Dark mode is supported via a parallel token set.
+Typography uses `Inter` for body at weights 400/600 and `Sora` for headings at 600/700. Cards use 12px radius and `0 6px 16px rgba(22, 48, 31, 0.10)`. The app follows platform conventions (iOS HIG vs Material) for navigation gestures and respects safe-area insets. Dark mode is supported via a parallel token set. Accessibility: all interactive elements carry screen-reader labels, text scales with dynamic type up to 200%, body text meets WCAG AA contrast, and touch targets are at least 44pt (iOS) / 48dp (Android).
 
 ## Screens & Navigation
 
@@ -83,11 +83,11 @@ Errors follow `{ code, message, requestId }`. Network timeout is 10s with one re
 
 ## Empty States
 
-| Screen | Empty state |
-| --- | --- |
-| Explore | "No trails in this region yet" with change-region action |
-| Downloads | illustration, "No offline trails", CTA to Explore |
-| Profile stats | "Track your first hike to see stats here" |
+| Screen | Empty | Loading |
+| --- | --- | --- |
+| Explore | "No trails in this region yet" with change-region action | skeleton trail cards |
+| Downloads | illustration, "No offline trails", CTA to Explore | spinner while reading SQLite |
+| Profile stats | "Track your first hike to see stats here" | skeleton stat tiles |
 
 ## Error Handling
 
