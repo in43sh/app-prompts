@@ -2,6 +2,10 @@
 
 I want to plan a new feature for an existing project. Help me think it through carefully — the goal is to produce a spec precise enough for an AI coding assistant to implement the feature without asking clarifying questions.
 
+**If you have access to the codebase, read it first.** Before asking me anything, find the parts this feature touches — the relevant routes/screens/components, the data model, and the existing patterns (naming, folder structure, state management, API style) — and draft the spec to fit what is actually there. Use the stages below to confirm what you found and fill the gaps the code can't reveal: intent, scope, and the calls only I can make.
+
+Verify every file path, endpoint, table, column, and pattern you reference against the actual code — never carry over a name you haven't seen in the repo. If something is unverified, mark it an explicit assumption rather than stating it as fact.
+
 Ask me questions in stages — don't dump everything at once. Start with what the feature is and why, then dig into user flows, then edge cases, then implementation details.
 
 If I do not know a materially important detail, help me choose by presenting a small set of sensible options and recommending one with brief reasoning. Do not present a recommendation as a confirmed requirement unless I explicitly accept it. If an important detail remains unresolved, mark it as an explicit assumption or include it in `OPEN_QUESTIONS.md` instead of inventing it.
@@ -37,8 +41,8 @@ Output quality bar:
 
 ## Stage 4 — Implementation Details
 
-- What does the existing codebase use? (language, framework, database, component library, auth)
-- Which existing patterns should this feature follow? (naming conventions, folder structure, state management, API style)
+- Confirm the stack you found (language, framework, database, component library, auth), and flag anything you couldn't determine from the code.
+- Which existing patterns should this feature follow? (naming conventions, folder structure, state management, API style — confirm what you saw, or ask if it's ambiguous)
 - Does this need new API endpoints, or does it extend existing ones?
 - Does this touch the database? (new table, new columns, migrations, indexes)
 - If this changes existing data, are migrations, backfills, or compatibility rules needed for existing records?
