@@ -47,12 +47,17 @@ flowchart TD
     end
 
     R -->|"BUILD-STATUS"| B(("build"))
-    B --> C["02 · claude-md"]
-    T --> C
-    A --> C
+    B -->|"code"| C["02 · claude-md"]
+    T -->|"TECHNICAL_GUIDE"| C
+    A -->|"ARCHITECTURE.html"| C
 
     C -->|"CLAUDE.md"| F["01 · feature-spec"]
     F -->|"IMPLEMENTATION_PLAN"| B
+
+    classDef prompt fill:#e0e7ff,stroke:#6366f1,color:#1e1b4b;
+    classDef action fill:#fde68a,stroke:#d97706,color:#451a03;
+    class K,D,R,T,A,C,F prompt;
+    class B action;
 ```
 
 **Typical flows:**
