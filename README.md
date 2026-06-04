@@ -60,6 +60,8 @@ flowchart TD
     class B action;
 ```
 
+Read it as two tracks feeding one pipeline. The upper track turns an idea into a buildable plan (kickoff → design/roadmap → build); the lower track reverse-engineers code that already exists (technical-guide / architecture-map). Both converge on `02-claude-md`, after which `01-feature-spec` drives each new unit of work and loops back into the build.
+
 **Typical flows:**
 
 - **New web/API project:** `00-kickoff-*` → feed the MVP/API doc into `04-design` (web) and `03-roadmap` → build against `BUILD-STATUS.md` → generate `02-claude-md` once code exists.
