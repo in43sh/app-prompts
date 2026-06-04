@@ -146,6 +146,40 @@ check_content_pattern \
   '^- '
 
 check_literal_headings \
+  "examples/00-kickoff-mobile/MOBILE_DOCUMENT.md" \
+  "Project Overview" \
+  "Design System" \
+  "Screens & Navigation" \
+  "Device Permissions & Capabilities" \
+  "Offline & Data Sync" \
+  "Backend Dependencies" \
+  "Permissions & Access Control" \
+  "User Flows" \
+  "Empty States" \
+  "Error Handling" \
+  "Push Notifications" \
+  "Security" \
+  "Project Structure" \
+  "Environment Variables" \
+  "App Store & Release" \
+  "Testing Strategy" \
+  "Implementation Order"
+
+check_heading_pattern \
+  "examples/00-kickoff-mobile/DECISIONS.md" \
+  "at least one ADR heading" \
+  '^## ADR-'
+
+check_literal_headings \
+  "examples/00-kickoff-mobile/DECISIONS.md" \
+  "Summary"
+
+check_content_pattern \
+  "examples/00-kickoff-mobile/OPEN_QUESTIONS.md" \
+  "at least one open-question bullet" \
+  '^- '
+
+check_literal_headings \
   "examples/01-feature-spec/FEATURE_SPEC.md" \
   "Feature Overview" \
   "User Flows" \

@@ -19,6 +19,7 @@ Each prompt's output files are detailed under [Output documents](#output-documen
 | --- | --- |
 | [docs/00-kickoff-web-app.md](docs/00-kickoff-web-app.md) | Web / frontend project kickoff |
 | [docs/00-kickoff-api.md](docs/00-kickoff-api.md) | API / backend project kickoff |
+| [docs/00-kickoff-mobile.md](docs/00-kickoff-mobile.md) | Mobile app (client) kickoff |
 | [docs/01-feature-spec.md](docs/01-feature-spec.md) | Plan a new feature in an existing project |
 | [docs/02-claude-md.md](docs/02-claude-md.md) | Generate a `CLAUDE.md` quick-reference for an existing codebase |
 | [docs/03-roadmap.md](docs/03-roadmap.md) | Plan phased rollout and track build progress |
@@ -33,7 +34,7 @@ The prompts aren't standalone — outputs from one become inputs to the next. Th
 ```mermaid
 flowchart TD
     subgraph new["Starting a new project"]
-        K["00 · kickoff (web-app / api)"]
+        K["00 · kickoff (web-app / api / mobile)"]
         D["04 · design"]
         R["03 · roadmap"]
         K -->|"MVP doc (web only)"| D
@@ -76,6 +77,7 @@ Finished sample outputs live in [`examples/`](examples):
 
 - [`examples/00-kickoff-web-app/`](examples/00-kickoff-web-app) — sample `MVP_DOCUMENT.md`, `DECISIONS.md`, `OPEN_QUESTIONS.md`
 - [`examples/00-kickoff-api/`](examples/00-kickoff-api) — sample `API_DOCUMENT.md`, `DECISIONS.md`, `OPEN_QUESTIONS.md`
+- [`examples/00-kickoff-mobile/`](examples/00-kickoff-mobile) — sample `MOBILE_DOCUMENT.md`, `DECISIONS.md`, `OPEN_QUESTIONS.md`
 - [`examples/01-feature-spec/`](examples/01-feature-spec) — sample `FEATURE_SPEC.md`, `IMPLEMENTATION_PLAN.md`
 - [`examples/02-claude-md/`](examples/02-claude-md) — sample `CLAUDE.md`
 - [`examples/03-roadmap/`](examples/03-roadmap) — sample `ROADMAP.md`, `BUILD-STATUS.md`
@@ -96,7 +98,7 @@ Use them to calibrate prompt changes and check whether generated outputs are con
 
 **Kickoff prompts** (`00-kickoff-*.md`) produce:
 
-- **MVP_DOCUMENT.md / API_DOCUMENT.md** — complete implementation spec (pages, schema, endpoints, security, project structure, env vars, build order)
+- **MVP_DOCUMENT.md / API_DOCUMENT.md / MOBILE_DOCUMENT.md** — complete implementation spec. Web: pages, schema, endpoints. API: endpoints, contracts, data. Mobile: screens & navigation, device permissions, offline/sync, backend dependencies, push, app-store release. All include security, project structure, env vars, and build order.
 - **DECISIONS.md** — architectural decision records (ADRs) with alternatives and rationale
 - **OPEN_QUESTIONS.md** — unresolved questions, edge cases, and post-v1 ideas
 
