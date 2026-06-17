@@ -33,6 +33,7 @@
     { "from": "public", "to": "api_collections" },
     { "from": "signin", "to": "api_auth" },
     { "from": "api_auth", "to": "github" },
+    { "from": "github", "to": "api_auth" },
     { "from": "api_auth", "to": "db" },
     { "from": "api_links", "to": "db" },
     { "from": "api_collections", "to": "db" },
