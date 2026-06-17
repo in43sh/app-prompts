@@ -58,7 +58,7 @@
   .node .path { color: var(--muted); font-size: 11px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
   .node .detail { color: var(--muted); font-size: 11px; }
   .node.dim { opacity: .28; }
-  .node.active { box-shadow: 0 0 0 1px var(--accent), 0 0 18px -6px var(--accent); border-left-color: var(--accent); }
+  .node.active { box-shadow: 0 0 0 1px var(--cat), 0 0 18px -6px var(--cat); border-color: var(--cat); border-left-color: var(--cat); }
 
   svg.wires { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: visible; }
 
@@ -80,7 +80,7 @@
   .step { display: flex; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--border); }
   .step .num {
     flex: none; width: 20px; height: 20px; border-radius: 50%;
-    background: var(--accent); color: #1a1300; font-weight: 700; font-size: 11px;
+    background: var(--accent); color: #0a0c12; font-weight: 700; font-size: 11px;
     display: grid; place-items: center; margin-top: 1px;
   }
   .step .hop { font-size: 12px; color: var(--muted); }
@@ -151,6 +151,7 @@ const DATA = {
     { "from": "public", "to": "api_collections" },
     { "from": "signin", "to": "api_auth" },
     { "from": "api_auth", "to": "github" },
+    { "from": "github", "to": "api_auth" },
     { "from": "api_auth", "to": "db" },
     { "from": "api_links", "to": "db" },
     { "from": "api_collections", "to": "db" },
@@ -234,6 +235,7 @@ const byId = {};
 DATA.nodes.forEach(n => (byId[n.id] = n));
 const catColor = {};
 DATA.categories.forEach(c => (catColor[c.id] = c.color));
+const colorOf = id => catColor[(byId[id] || {}).category] || "#94a3b8";
 const nodeEls = {};
 let selected = null;
 
@@ -305,24 +307,36 @@ function line(x1, y1, x2, y2, cls) {
   return l;
 }
 
-function badge(x, y, n) {
+function badge(x, y, n, color) {
   const g = document.createElementNS(SVGNS, "g");
   const c = document.createElementNS(SVGNS, "circle");
-  c.setAttribute("cx", x); c.setAttribute("cy", y); c.setAttribute("r", 9);
-  c.setAttribute("fill", "var(--accent)");
+  c.setAttribute("cx", x); c.setAttribute("cy", y); c.setAttribute("r", 9.5);
+  c.setAttribute("fill", "var(--bg)");
+  c.setAttribute("stroke", color); c.setAttribute("stroke-width", "2");
   const t = document.createElementNS(SVGNS, "text");
-  t.setAttribute("x", x); t.setAttribute("y", y + 3.5);
-  t.setAttribute("text-anchor", "middle");
+  t.setAttribute("x", x); t.setAttribute("y", y);
+  t.setAttribute("text-anchor", "middle"); t.setAttribute("dominant-baseline", "central");
   t.setAttribute("font-size", "11"); t.setAttribute("font-weight", "700");
-  t.setAttribute("fill", "#1a1300");
+  t.setAttribute("fill", color);
   t.textContent = n;
   g.appendChild(c); g.appendChild(t);
   return g;
 }
 
+function arrowMarker(id, color) {
+  const m = document.createElementNS(SVGNS, "marker");
+  m.setAttribute("id", id);
+  m.setAttribute("viewBox", "0 0 10 10");
+  m.setAttribute("refX", "8.5"); m.setAttribute("refY", "5");
+  m.setAttribute("markerWidth", "7"); m.setAttribute("markerHeight", "7");
+  m.setAttribute("orient", "auto-start-reverse");
+  m.innerHTML = `<path d="M0,0 L10,5 L0,10 z" fill="${color}"></path>`;
+  return m;
+}
+
 function draw() {
   svg.innerHTML = "";
-  // resting edges
+  // resting edges (faint; fade further when a flow is selected)
   DATA.edges.forEach(e => {
     const f = nodeEls[e.from], t = nodeEls[e.to];
     if (!f || !t) return;
@@ -330,19 +344,48 @@ function draw() {
     const l = line(x1, y1, x2, y2, "rest");
     l.setAttribute("stroke", "var(--edge)");
     l.setAttribute("stroke-width", "1.5");
+    l.setAttribute("opacity", selected ? "0.25" : "0.7");
     svg.appendChild(l);
   });
   if (!selected) return;
   const flow = DATA.flows.find(fl => fl.id === selected);
+
+  // group steps by unordered pair so request/response & parallels fan out
+  const groups = {};
+  flow.steps.forEach((s, i) => {
+    const key = [s.from, s.to].slice().sort().join(" ");
+    (groups[key] ||= []).push(i);
+  });
+
   flow.steps.forEach((s, i) => {
     const f = nodeEls[s.from], t = nodeEls[s.to];
     if (!f || !t) return;
     const { x1, y1, x2, y2 } = anchor(f, t);
-    const l = line(x1, y1, x2, y2, "hot");
-    l.setAttribute("stroke", "var(--accent)");
-    l.setAttribute("stroke-width", "2.5");
-    svg.appendChild(l);
-    svg.appendChild(badge((x1 + x2) / 2, (y1 + y2) / 2, i + 1));
+
+    // perpendicular bow so parallel hops between the same pair don't overlap
+    const grp = groups[[s.from, s.to].slice().sort().join(" ")];
+    const off = (grp.indexOf(i) - (grp.length - 1) / 2) * 26;
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    let nx = -(y2 - y1), ny = (x2 - x1);
+    const len = Math.hypot(nx, ny) || 1; nx /= len; ny /= len;
+    const cx = mx + nx * off, cy = my + ny * off;
+
+    const color = colorOf(s.from);   // connector is the colour of who is acting
+    const mid = "arrow-" + i;
+    svg.appendChild(arrowMarker(mid, color));
+
+    const path = document.createElementNS(SVGNS, "path");
+    path.setAttribute("d", `M${x1},${y1} Q${cx},${cy} ${x2},${y2}`);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", color);
+    path.setAttribute("stroke-width", "2.5");
+    path.setAttribute("marker-end", `url(#${mid})`);
+    svg.appendChild(path);
+
+    // badge at the quadratic curve's midpoint (t = 0.5)
+    const bx = 0.25 * x1 + 0.5 * cx + 0.25 * x2;
+    const by = 0.25 * y1 + 0.5 * cy + 0.25 * y2;
+    svg.appendChild(badge(bx, by, i + 1, color));
   });
 }
 
@@ -361,7 +404,7 @@ function renderSteps() {
     const row = document.createElement("div");
     row.className = "step";
     row.innerHTML =
-      `<div class="num">${i + 1}</div>` +
+      `<div class="num" style="background:${colorOf(s.from)}">${i + 1}</div>` +
       `<div><div class="hop"><b>${byId[s.from].label}</b> → <b>${byId[s.to].label}</b></div>` +
       `<div class="lbl">${s.label}</div>` +
       (s.detail ? `<div class="det">${s.detail}</div>` : "") + `</div>`;
