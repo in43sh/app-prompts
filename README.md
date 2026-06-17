@@ -25,7 +25,7 @@ Each prompt's output files are detailed under [Output documents](#output-documen
 | [docs/03-roadmap.md](docs/03-roadmap.md) | Plan phased rollout and track build progress |
 | [docs/04-design.md](docs/04-design.md) | Generate a reusable design system prompt for AI design tools |
 | [docs/05-technical-guide.md](docs/05-technical-guide.md) | Document an existing codebase in depth |
-| [docs/06-architecture-map.md](docs/06-architecture-map.md) | Map an existing codebase to an interactive diagram |
+| [docs/06-system-graph.md](docs/06-system-graph.md) | Map an existing codebase to an interactive diagram |
 
 ## How the prompts chain
 
@@ -44,13 +44,13 @@ flowchart TD
 
     subgraph existing["Documenting existing code"]
         T["05 · technical-guide"]
-        A["06 · architecture-map"]
+        A["06 · system-graph"]
     end
 
     R -->|"BUILD-STATUS"| B(("build"))
     B -->|"code"| C["02 · claude-md"]
     T -->|"TECHNICAL_GUIDE"| C
-    A -->|"ARCHITECTURE.html"| C
+    A -->|"SYSTEM_GRAPH.html"| C
 
     C -->|"CLAUDE.md"| F["01 · feature-spec"]
     F -->|"IMPLEMENTATION_PLAN"| B
@@ -66,7 +66,7 @@ Read it as two tracks feeding one pipeline. The upper track turns an idea into a
 **Typical flows:**
 
 - **New web/API project:** `00-kickoff-*` → feed the MVP/API doc into `04-design` (web) and `03-roadmap` → build against `BUILD-STATUS.md` → generate `02-claude-md` once code exists.
-- **Existing codebase:** `05-technical-guide` and/or `06-architecture-map` to map it → `02-claude-md` for an AI quick-reference.
+- **Existing codebase:** `05-technical-guide` and/or `06-system-graph` to map it → `02-claude-md` for an AI quick-reference.
 - **Ongoing work (either track):** `01-feature-spec` per feature → build → repeat.
 
 `02-claude-md` is the hinge: run it once real code exists so every later session starts with accurate context.
@@ -83,7 +83,7 @@ Finished sample outputs live in [`examples/`](examples):
 - [`examples/03-roadmap/`](examples/03-roadmap) — sample `ROADMAP.md`, `BUILD-STATUS.md`
 - [`examples/04-design/`](examples/04-design) — sample `DESIGN_PROMPT.md`
 - [`examples/05-technical-guide/`](examples/05-technical-guide) — sample `TECHNICAL_GUIDE.md`
-- [`examples/06-architecture-map/`](examples/06-architecture-map) — sample `ARCHITECTURE.html`, `architecture.json`
+- [`examples/06-system-graph/`](examples/06-system-graph) — sample `SYSTEM_GRAPH.html`, `system-graph.json`
 
 Use them to calibrate prompt changes and check whether generated outputs are concrete enough to implement.
 
@@ -124,7 +124,7 @@ Use them to calibrate prompt changes and check whether generated outputs are con
 
 - **TECHNICAL_GUIDE.md** — in-depth codebase reference: architecture diagram, data model, subsystems, API/frontend maps, testing, local dev, deployment, security, patterns, glossary, and future work
 
-**Architecture map** (`06-architecture-map.md`) produces:
+**System graph** (`06-system-graph.md`) produces:
 
-- **ARCHITECTURE.html** — a single self-contained interactive page: components grouped by role, click a flow to highlight its path and step-by-step payloads
-- **architecture.json** — the same map as structured data for the next agent or tool (embedded inside the HTML so the page works offline)
+- **SYSTEM_GRAPH.html** — a single self-contained interactive page: components grouped by role, click a flow to highlight its path and step-by-step payloads
+- **system-graph.json** — the same map as structured data for the next agent or tool (embedded inside the HTML so the page works offline)

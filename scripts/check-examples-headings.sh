@@ -276,22 +276,22 @@ check_literal_headings \
   "17. Future Work"
 
 check_content_pattern \
-  "examples/06-architecture-map/architecture.json" \
+  "examples/06-system-graph/system-graph.json" \
   "a nodes array" \
   '"nodes"'
 
 check_content_pattern \
-  "examples/06-architecture-map/architecture.json" \
+  "examples/06-system-graph/system-graph.json" \
   "a flows array" \
   '"flows"'
 
 check_content_pattern \
-  "examples/06-architecture-map/ARCHITECTURE.html" \
+  "examples/06-system-graph/SYSTEM_GRAPH.html" \
   "an embedded DATA block" \
   'const DATA'
 
 check_content_pattern \
-  "examples/06-architecture-map/ARCHITECTURE.html" \
+  "examples/06-system-graph/SYSTEM_GRAPH.html" \
   "a flows panel" \
   'id="flows"'
 
