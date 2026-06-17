@@ -107,6 +107,6 @@
   "meta": {
     "generatedAt": "2026-05-31",
     "sourceCommit": "example — not from a real repo",
-    "notes": "Sample output for the 06-architecture-map prompt. Mirrors the LinkVault app used in examples/05-technical-guide."
+    "notes": "Sample output for the 06-system-graph prompt. Mirrors the LinkVault app used in examples/05-technical-guide."
   }
 }

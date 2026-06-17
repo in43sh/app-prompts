@@ -1,9 +1,9 @@
-# Map App Architecture (HTML + JSON)
+# Map the System Graph (HTML + JSON)
 
 I have an existing codebase and want two artifacts that map how the whole system fits together:
 
-1. **`ARCHITECTURE.html`** — a single, self-contained interactive page *for humans*. It shows every component grouped by role, and lets me pick a flow to highlight the exact path a request takes through the system, step by step.
-2. **`architecture.json`** — the same map as structured data *for the next agent or tool*. It is the machine-readable source the HTML renders from.
+1. **`SYSTEM_GRAPH.html`** — a single, self-contained interactive page *for humans*. It shows every component grouped by role, and lets me pick a flow to highlight the exact path a request takes through the system, step by step.
+2. **`system-graph.json`** — the same map as structured data *for the next agent or tool*. It is the machine-readable source the HTML renders from.
 
 The HTML is generated *from* the JSON — they describe the same graph, and the JSON is embedded inside the HTML so the page works offline by double-click.
 
@@ -37,7 +37,7 @@ After I answer, produce the following two files:
 
 ---
 
-### 1. `architecture.json`
+### 1. `system-graph.json`
 
 A structured map of the system. Use exactly this shape:
 
@@ -96,12 +96,12 @@ Rules:
 - Keep node ids stable and slug-like so the map diffs cleanly when regenerated.
 - Fill `meta.sourceCommit` from `git rev-parse --short HEAD` and `meta.generatedAt` with the current date.
 
-### 2. `ARCHITECTURE.html`
+### 2. `SYSTEM_GRAPH.html`
 
 A single self-contained HTML file. Requirements:
 
 - **No build step and no network.** Inline all CSS and JS. Do not load anything from a CDN — the file must render by double-clicking it (`file://`).
-- **Embed the data.** Include the `architecture.json` contents inline as `const DATA = { ... }` so the page is standalone. (The separate `.json` file is the agent-facing copy.)
+- **Embed the data.** Include the `system-graph.json` contents inline as `const DATA = { ... }` so the page is standalone. (The separate `.json` file is the agent-facing copy.)
 - **Layout.** Render nodes in columns grouped by category, in the category order given. Head each column with its category label (don't rely on color alone to convey role). Each node is a labeled box; show its `path`/`detail` when present. Include a legend mapping each category to its color.
 - **Flows panel.** A list of flows in a side rail (`id="flows"`). Clicking a flow highlights its nodes and draws its `steps` as numbered connectors between the node boxes. Dim the nodes and edges not in the selected flow so the path stands out.
 - **Connectors.** Draw them as a single SVG overlay sitting above the columns. Compute each line's endpoints from the node boxes' on-screen geometry — anchor on each box's border facing the other box — and redraw on both window `resize` and `scroll` (or anchor the SVG to the scrolling container) so they keep tracking the boxes. Give each connector an arrowhead at the `to` end so direction is visible (a response step points back), and put the step number on a small badge at its midpoint.
@@ -114,11 +114,11 @@ A single self-contained HTML file. Requirements:
 
 Format guidelines:
 
-- The two files must agree exactly — same nodes, same ids, same flows. Generate `architecture.json` first, then embed it verbatim as `DATA` in the HTML; don't hand-edit either copy afterward, or they drift.
+- The two files must agree exactly — same nodes, same ids, same flows. Generate `system-graph.json` first, then embed it verbatim as `DATA` in the HTML; don't hand-edit either copy afterward, or they drift.
 - Use real, verifiable names everywhere: file paths, table names, route paths, service names.
 - Treat both files as generated artifacts: regenerating from the current code refreshes them. Note in `meta.notes` anything you assumed rather than verified.
-- After generating, verify before handing over. If you can drive a browser (e.g. a headless one), open `ARCHITECTURE.html` and confirm it renders, the default flow highlights, and the connectors track the boxes on resize/scroll. If you can't, do a static check: the HTML is well-formed, the inline `DATA` parses as JSON, every `from`/`to` id in `edges` and `flows` resolves to a real node, and every flow-step pair is present in `edges` (the rule above). Fix what's broken before handing it over.
+- After generating, verify before handing over. If you can drive a browser (e.g. a headless one), open `SYSTEM_GRAPH.html` and confirm it renders, the default flow highlights, and the connectors track the boxes on resize/scroll. If you can't, do a static check: the HTML is well-formed, the inline `DATA` parses as JSON, every `from`/`to` id in `edges` and `flows` resolves to a real node, and every flow-step pair is present in `edges` (the rule above). Fix what's broken before handing it over.
 
 ---
 
-> **Goal:** I open `ARCHITECTURE.html`, click any flow, and immediately see the path through my system and what is passed at each step. The next agent reads `architecture.json` and has a verified component-and-flow map of the codebase without re-deriving it.
+> **Goal:** I open `SYSTEM_GRAPH.html`, click any flow, and immediately see the path through my system and what is passed at each step. The next agent reads `system-graph.json` and has a verified component-and-flow map of the codebase without re-deriving it.

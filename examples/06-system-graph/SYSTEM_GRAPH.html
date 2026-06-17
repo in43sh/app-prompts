@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>LinkVault — Architecture &amp; Flows</title>
+<title>LinkVault — System Graph</title>
 <style>
   :root {
     --bg: #0a0c12;
@@ -225,7 +225,7 @@ const DATA = {
   "meta": {
     "generatedAt": "2026-05-31",
     "sourceCommit": "example — not from a real repo",
-    "notes": "Sample output for the 06-architecture-map prompt. Mirrors the LinkVault app used in examples/05-technical-guide."
+    "notes": "Sample output for the 06-system-graph prompt. Mirrors the LinkVault app used in examples/05-technical-guide."
   }
 };
 
@@ -238,7 +238,7 @@ const nodeEls = {};
 let selected = null;
 
 // --- render header ---
-document.getElementById("title").textContent = DATA.name + " — Architecture & Flows";
+document.getElementById("title").textContent = DATA.name + " — System Graph";
 document.getElementById("desc").textContent = DATA.description;
 const legend = document.getElementById("legend");
 DATA.categories.forEach(c => {
