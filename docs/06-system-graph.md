@@ -110,6 +110,7 @@ A single self-contained HTML file. Requirements:
 - **Steps panel.** When a flow is selected, show its ordered steps as a numbered list: `from → to`, the step `label`, and `detail`.
 - **Clear selection.** A control that resets to the at-rest view (faint static edges, no flow highlighted).
 - **Theme.** Dark, high-contrast, readable. Make the selected path obviously brighter than the resting edges.
+- **Responsive layout.** On screens narrower than 900px, replace the stacked Flows and Steps cards with a tab interface. When a flow is selected, auto-switch to the Steps tab so the path is immediately visible without scrolling. Tabs appear as a bar above the cards with an active underline indicator.
 - Select the flow named in Stage 3 by default.
 
 Format guidelines:
