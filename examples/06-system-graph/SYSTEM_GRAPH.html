@@ -99,6 +99,15 @@
   .step .lbl { font-weight: 600; }
   .step .det { color: var(--muted); font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   .empty { padding: 14px 16px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); }
+
+  .meta { flex: none; border-top: 1px solid var(--border); }
+  .meta-toggle { width: 100%; padding: 10px 16px; background: none; border: none; color: var(--muted); cursor: pointer; font: inherit; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: color .15s; }
+  .meta-toggle:hover { color: var(--text); }
+  .meta-toggle .icon { display: inline-block; transition: transform .2s; }
+  .meta-toggle.collapsed .icon { transform: rotate(-90deg); }
+  .meta-content { padding: 0 16px 14px; font-size: 11px; color: var(--muted); }
+  .meta.collapsed .meta-content { display: none; }
+  .meta code { color: #38bdf8; }
 </style>
 </head>
 <body>
@@ -126,6 +135,13 @@
     <div class="card" id="steps-card">
       <h2>Steps</h2>
       <div id="steps"></div>
+    </div>
+    <div class="meta collapsed">
+      <button class="meta-toggle" id="meta-toggle">
+        <span>Info</span>
+        <span class="icon">▶</span>
+      </button>
+      <div class="meta-content" id="meta-content"></div>
     </div>
   </aside>
 </div>
@@ -453,6 +469,24 @@ DATA.flows.forEach(fl => {
   flowsEl.appendChild(b);
 });
 document.getElementById("clear").addEventListener("click", () => select(null));
+
+// --- metadata display ---
+const metaContent = document.getElementById("meta-content");
+const m = DATA.meta || {};
+metaContent.appendChild(document.createTextNode("Generated " + (m.generatedAt||"?") + " · commit "));
+const code = document.createElement("code");
+code.textContent = m.sourceCommit || "?";
+metaContent.appendChild(code);
+if (m.notes) {
+  metaContent.appendChild(document.createElement("br"));
+  const s = document.createElement("span");
+  s.textContent = m.notes;
+  s.style.opacity = ".85";
+  metaContent.appendChild(s);
+}
+document.getElementById("meta-toggle").addEventListener("click", () => {
+  document.querySelector(".meta").classList.toggle("collapsed");
+});
 
 // --- tab switching (small screens) ---
 const tabs = document.querySelectorAll(".tab");
