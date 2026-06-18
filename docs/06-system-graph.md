@@ -109,7 +109,9 @@ A single self-contained HTML file. Requirements:
 - **Escape text.** Node and flow strings can contain characters like `[`, `]`, or `<` (e.g. `src/app/[id]/route.ts`). Escape them before inserting into the DOM so they can't break layout.
 - **Steps panel.** When a flow is selected, show its ordered steps as a numbered list: `from → to`, the step `label`, and `detail`.
 - **Clear selection.** A control that resets to the at-rest view (faint static edges, no flow highlighted).
+- **Metadata display.** Show generation metadata (timestamp, source commit, notes) in a collapsible section at the bottom of the sidebar. Default to collapsed to preserve space; click the "Info" toggle to expand and see details.
 - **Theme.** Dark, high-contrast, readable. Make the selected path obviously brighter than the resting edges.
+- **Responsive layout.** On screens narrower than 900px, replace the stacked Flows and Steps cards with a tab interface. When a flow is selected, auto-switch to the Steps tab so the path is immediately visible without scrolling. Tabs appear as a bar above the cards with an active underline indicator.
 - Select the flow named in Stage 3 by default.
 
 Format guidelines:

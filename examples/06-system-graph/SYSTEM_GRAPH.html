@@ -63,7 +63,18 @@
   svg.wires { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: visible; }
 
   aside { display: flex; flex-direction: column; gap: 18px; }
+  .tabs { display: none; }
+  @media (max-width: 900px) {
+    .tabs { display: flex; gap: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .tab { flex: 1; background: none; border: none; padding: 12px 16px; color: var(--muted); cursor: pointer; font-weight: 600; font-size: 13px; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  }
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  @media (max-width: 900px) {
+    .card { display: none; }
+    .card.active { display: flex; flex-direction: column; }
+  }
   .card h2 { margin: 0; padding: 14px 16px 10px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
   .flow {
     display: block; width: 100%; text-align: left; cursor: pointer;
@@ -88,6 +99,15 @@
   .step .lbl { font-weight: 600; }
   .step .det { color: var(--muted); font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   .empty { padding: 14px 16px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); }
+
+  .meta { flex: none; border-top: 1px solid var(--border); }
+  .meta-toggle { width: 100%; padding: 10px 16px; background: none; border: none; color: var(--muted); cursor: pointer; font: inherit; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: color .15s; }
+  .meta-toggle:hover { color: var(--text); }
+  .meta-toggle .icon { display: inline-block; transition: transform .2s; }
+  .meta-toggle.collapsed .icon { transform: rotate(-90deg); }
+  .meta-content { padding: 0 16px 14px; font-size: 11px; color: var(--muted); }
+  .meta.collapsed .meta-content { display: none; }
+  .meta code { color: #38bdf8; }
 </style>
 </head>
 <body>
@@ -103,14 +123,25 @@
     <div class="columns" id="columns"></div>
   </div>
   <aside>
-    <div class="card">
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="flows">Flows</button>
+      <button class="tab" data-tab="steps">Steps</button>
+    </div>
+    <div class="card active" id="flows-card">
       <h2>Flows</h2>
       <div id="flows"></div>
       <button class="clear" id="clear">Clear selection</button>
     </div>
-    <div class="card">
+    <div class="card" id="steps-card">
       <h2>Steps</h2>
       <div id="steps"></div>
+    </div>
+    <div class="meta collapsed">
+      <button class="meta-toggle" id="meta-toggle">
+        <span>Info</span>
+        <span class="icon">▶</span>
+      </button>
+      <div class="meta-content" id="meta-content"></div>
     </div>
   </aside>
 </div>
@@ -438,6 +469,48 @@ DATA.flows.forEach(fl => {
   flowsEl.appendChild(b);
 });
 document.getElementById("clear").addEventListener("click", () => select(null));
+
+// --- metadata display ---
+const metaContent = document.getElementById("meta-content");
+const m = DATA.meta || {};
+metaContent.appendChild(document.createTextNode("Generated " + (m.generatedAt||"?") + " · commit "));
+const code = document.createElement("code");
+code.textContent = m.sourceCommit || "?";
+metaContent.appendChild(code);
+if (m.notes) {
+  metaContent.appendChild(document.createElement("br"));
+  const s = document.createElement("span");
+  s.textContent = m.notes;
+  s.style.opacity = ".85";
+  metaContent.appendChild(s);
+}
+document.getElementById("meta-toggle").addEventListener("click", () => {
+  document.querySelector(".meta").classList.toggle("collapsed");
+});
+
+// --- tab switching (small screens) ---
+const tabs = document.querySelectorAll(".tab");
+const flowsCard = document.getElementById("flows-card");
+const stepsCard = document.getElementById("steps-card");
+
+function switchTab(tabName) {
+  tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === tabName));
+  flowsCard.classList.toggle("active", tabName === "flows");
+  stepsCard.classList.toggle("active", tabName === "steps");
+}
+
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => switchTab(tab.dataset.tab));
+});
+
+// auto-switch to steps when a flow is selected
+const originalSelect = window.select;
+window.select = function(id) {
+  originalSelect(id);
+  if (id) {
+    switchTab("steps");
+  }
+};
 
 window.addEventListener("resize", draw);
 requestAnimationFrame(() => select(DATA.flows[0].id)); // default selection
